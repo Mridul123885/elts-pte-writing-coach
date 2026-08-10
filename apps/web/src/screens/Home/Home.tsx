@@ -9,6 +9,75 @@ interface Profile {
   target_pte_score: number | null;
 }
 
+function TargetEditor({
+  label,
+  value,
+  min,
+  max,
+  step,
+  onSave,
+}: {
+  label: string;
+  value: number | null;
+  min: number;
+  max: number;
+  step: number;
+  onSave: (value: number) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value?.toString() ?? "");
+
+  if (editing) {
+    return (
+      <div className="flex items-center gap-2">
+        <input
+          type="number"
+          min={min}
+          max={max}
+          step={step}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          autoFocus
+          className="w-20 rounded-md border border-slate-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+        />
+        <button
+          onClick={() => {
+            const num = Number(draft);
+            if (!Number.isNaN(num)) onSave(num);
+            setEditing(false);
+          }}
+          className="text-sm text-slate-800 font-medium underline"
+        >
+          Save
+        </button>
+        <button
+          onClick={() => {
+            setDraft(value?.toString() ?? "");
+            setEditing(false);
+          }}
+          className="text-sm text-slate-400"
+        >
+          Cancel
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <p className="text-slate-700">
+        {label}: {value ?? "not set"}
+      </p>
+      <button
+        onClick={() => setEditing(true)}
+        className="text-xs text-slate-500 underline"
+      >
+        {value == null ? "Set target" : "Edit"}
+      </button>
+    </div>
+  );
+}
+
 export default function Home() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -28,6 +97,18 @@ export default function Home() {
       });
   }, [user]);
 
+  async function saveTargetIelts(value: number) {
+    if (!user) return;
+    await supabase.from("profiles").update({ target_ielts_band: value }).eq("id", user.id);
+    setProfile((prev) => (prev ? { ...prev, target_ielts_band: value } : prev));
+  }
+
+  async function saveTargetPte(value: number) {
+    if (!user) return;
+    await supabase.from("profiles").update({ target_pte_score: value }).eq("id", user.id);
+    setProfile((prev) => (prev ? { ...prev, target_pte_score: value } : prev));
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-8">
       <div className="max-w-md mx-auto space-y-6">
@@ -45,16 +126,26 @@ export default function Home() {
 
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 space-y-2">
           <p className="text-sm text-slate-500">IELTS Writing</p>
-          <p className="text-slate-700">
-            Target Band: {profile?.target_ielts_band ?? "not set"}
-          </p>
+          <TargetEditor
+            label="Target Band"
+            value={profile?.target_ielts_band ?? null}
+            min={4}
+            max={9}
+            step={0.5}
+            onSave={saveTargetIelts}
+          />
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 space-y-2">
           <p className="text-sm text-slate-500">PTE Writing</p>
-          <p className="text-slate-700">
-            Target Score: {profile?.target_pte_score ?? "not set"}
-          </p>
+          <TargetEditor
+            label="Target Score"
+            value={profile?.target_pte_score ?? null}
+            min={10}
+            max={90}
+            step={1}
+            onSave={saveTargetPte}
+          />
         </div>
 
         <button
