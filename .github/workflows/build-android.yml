@@ -31,10 +31,6 @@ jobs:
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         run: npm run build
 
-      - name: Add Android platform
-        working-directory: apps/web
-        run: npx cap add android
-
       - name: Sync Capacitor
         working-directory: apps/web
         run: npx cap sync android
