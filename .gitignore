@@ -4,3 +4,12 @@ dist/
 .env.local
 *.log
 .DS_Store
+android/app/build/
+android/.gradle/
+android/local.properties
+android/app/release/
+android/*.iml
+android/.idea/
+android/app/*.jks
+android/app/*.keystore
+android/key.properties
